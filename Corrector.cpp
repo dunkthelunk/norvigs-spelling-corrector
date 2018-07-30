@@ -56,9 +56,17 @@ Strings Corrector::oneEditAway(std::string Word) {
       WordsOneEditAway.push_back(Word.substr(0, j) +
                                  Word.substr(j + 1, Word.size()));
     }
+    if (j < Word.size() - 1) {
+      WordsOneEditAway.push_back(Word.substr(0, j) + Word[j + 1] + Word[j] +
+                                 Word.substr(j + 2, Word.size()));
+    }
     for (auto i = 0; i < 26; i++) {
       WordsOneEditAway.push_back(Word.substr(0, j) + Alphabet[i] +
                                  Word.substr(j, Word.size()));
+      if (j != Word.size()) {
+        WordsOneEditAway.push_back(Word.substr(0, j) + Alphabet[i] +
+                                   Word.substr(j + 1, Word.size()));
+      }
     }
   }
   return WordsOneEditAway;
@@ -71,6 +79,7 @@ Strings Corrector::twoEditsAway(std::string Word) {
   }
   return Result;
 }
+
 Strings Corrector::candidates(std::string Word) {
   auto Result = this->known({Word});
   if (Result.size() != 0) {
