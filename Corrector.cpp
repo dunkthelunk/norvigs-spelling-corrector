@@ -11,9 +11,7 @@ void Corrector::loadWords(std::string FilePath) {
     std::transform(WordIn.begin(), WordIn.end(), WordIn.begin(), ::tolower);
     auto WIt = WordFreqMap.find(WordIn);
     auto PrevFreq = 0;
-    if (WIt != WordFreqMap.end()) {
-      PrevFreq = WIt->second;
-    }
+    if (WIt != WordFreqMap.end()) PrevFreq = WIt->second;
     WordFreqMap.insert_or_assign(WordIn, ++PrevFreq);
   }
   File.close();
@@ -22,9 +20,7 @@ void Corrector::loadWords(std::string FilePath) {
 std::string Corrector::correct(std::string Input) {
   std::transform(Input.begin(), Input.end(), Input.begin(), ::tolower);
   auto Candidates = this->candidates(Input);
-  if (Candidates.size() == 1 & Candidates[0] == Input) {
-    return Input;
-  }
+  if (Candidates.size() == 1 & Candidates[0] == Input) return Input;
   auto CompareFrequency = [&](auto F, auto S) -> bool {
     return WordFreqMap.at(F) > WordFreqMap.at(S);
   };
@@ -36,12 +32,11 @@ std::string Corrector::correct(std::string Input) {
 Strings Corrector::known(Strings WordSet) {
   Strings KnownWords;
   for (auto W : WordSet) {
-    if (WordFreqMap.find(W) != WordFreqMap.end()) {
-      KnownWords.push_back(W);
-    }
+    if (WordFreqMap.find(W) != WordFreqMap.end()) KnownWords.push_back(W);
   }
   return KnownWords;
 }
+
 Strings Corrector::oneEditAway(std::string Word) {
   Strings WordsOneEditAway;
   std::string Alphabet = "abcdefghijklmnopqrstuvwxyz";
@@ -65,6 +60,7 @@ Strings Corrector::oneEditAway(std::string Word) {
   }
   return WordsOneEditAway;
 }
+
 Strings Corrector::twoEditsAway(std::string Word) {
   Strings Result;
   for (auto WordOneEditAway : oneEditAway(Word)) {
@@ -76,16 +72,10 @@ Strings Corrector::twoEditsAway(std::string Word) {
 
 Strings Corrector::candidates(std::string Word) {
   auto Result = this->known({Word});
-  if (Result.size() != 0) {
-    return Result;
-  }
+  if (Result.size() != 0) return Result;
   Result = this->known(this->oneEditAway(Word));
-  if (Result.size() != 0) {
-    return Result;
-  }
+  if (Result.size() != 0) return Result;
   Result = this->known(this->twoEditsAway(Word));
-  if (Result.size() != 0) {
-    return Result;
-  }
+  if (Result.size() != 0) return Result;
   return {Word};
 }
