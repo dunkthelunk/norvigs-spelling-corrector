@@ -1,7 +1,7 @@
 #include "Corrector.h"
 #include <algorithm>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 void Corrector::loadWords(std::string FilePath) {
   std::fstream File;
@@ -25,20 +25,18 @@ std::string Corrector::correct(std::string Input) {
   if (Candidates.size() == 1 & Candidates[0] == Input) {
     return Input;
   }
-  auto CompareFrequency = [&](auto F,
-      auto S) -> bool {
+  auto CompareFrequency = [&](auto F, auto S) -> bool {
     return WordFreqMap.at(F) > WordFreqMap.at(S);
   };
   auto MaxIt =
-    std::max_element(Candidates.begin(), Candidates.end(), CompareFrequency);
+      std::max_element(Candidates.begin(), Candidates.end(), CompareFrequency);
   return *MaxIt;
 }
 
 Strings Corrector::known(Strings WordSet) {
   Strings KnownWords;
   for (auto W : WordSet) {
-    if (std::any_of(this->WordFreqMap.begin(), this->WordFreqMap.end(),
-          [&](auto S) -> bool { return S.first == W; })) {
+    if (WordFreqMap.find(W) != WordFreqMap.end()) {
       KnownWords.push_back(W);
     }
   }
@@ -50,18 +48,18 @@ Strings Corrector::oneEditAway(std::string Word) {
   for (auto j = 0; j <= Word.size(); j++) {
     if (j != Word.size()) { // delete letter
       WordsOneEditAway.push_back(Word.substr(0, j) +
-          Word.substr(j + 1, Word.size()));
+                                 Word.substr(j + 1, Word.size()));
     }
     if (j < Word.size() - 1) { // transpose
       WordsOneEditAway.push_back(Word.substr(0, j) + Word[j + 1] + Word[j] +
-          Word.substr(j + 2, Word.size()));
+                                 Word.substr(j + 2, Word.size()));
     }
     for (auto i = 0; i < 26; i++) {
       WordsOneEditAway.push_back(Word.substr(0, j) + Alphabet[i] +
-          Word.substr(j, Word.size())); // insert
-      if (j != Word.size()) { // replace
+                                 Word.substr(j, Word.size())); // insert
+      if (j != Word.size()) {                                  // replace
         WordsOneEditAway.push_back(Word.substr(0, j) + Alphabet[i] +
-            Word.substr(j + 1, Word.size()));
+                                   Word.substr(j + 1, Word.size()));
       }
     }
   }
