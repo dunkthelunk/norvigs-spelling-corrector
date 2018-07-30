@@ -1,26 +1,22 @@
 #include "Corrector.h"
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 
-void Corrector::loadWords(std::string Filepath) {
-  // TODO READ Words FROM FILE in lowercase
-  Strings WordsFromFile;
-  WordsFromFile.push_back("eat");
-  WordsFromFile.push_back("book");
-  WordsFromFile.push_back("read");
-  WordsFromFile.push_back("bus");
-  WordsFromFile.push_back("bus");
-  WordsFromFile.push_back("bus");
-  WordsFromFile.push_back("busy");
-  WordsFromFile.push_back("city");
-  WordsFromFile.push_back("buffalo");
-  for (auto Word : WordsFromFile) {
-    auto WIt = WordFreqMap.find(Word);
+void Corrector::loadWords(std::string FilePath) {
+  std::fstream File;
+  File.open(FilePath);
+  std::string WordIn;
+  while (File >> WordIn) {
+    std::transform(WordIn.begin(), WordIn.end(), WordIn.begin(), ::tolower);
+    auto WIt = WordFreqMap.find(WordIn);
     auto PrevFreq = 0;
     if (WIt != WordFreqMap.end()) {
       PrevFreq = WIt->second;
     }
-    WordFreqMap.insert_or_assign(Word, ++PrevFreq);
+    WordFreqMap.insert_or_assign(WordIn, ++PrevFreq);
   }
+  File.close();
 }
 
 std::string Corrector::correct(std::string Input) {
@@ -29,12 +25,12 @@ std::string Corrector::correct(std::string Input) {
   if (Candidates.size() == 1 & Candidates[0] == Input) {
     return Input;
   }
-  auto CompareFrequency = [&](const std::string &F,
-                              const std::string &S) -> bool {
+  auto CompareFrequency = [&](auto F,
+      auto S) -> bool {
     return WordFreqMap.at(F) > WordFreqMap.at(S);
   };
   auto MaxIt =
-      std::max_element(Candidates.begin(), Candidates.end(), CompareFrequency);
+    std::max_element(Candidates.begin(), Candidates.end(), CompareFrequency);
   return *MaxIt;
 }
 
@@ -42,7 +38,7 @@ Strings Corrector::known(Strings WordSet) {
   Strings KnownWords;
   for (auto W : WordSet) {
     if (std::any_of(this->WordFreqMap.begin(), this->WordFreqMap.end(),
-                    [&](auto S) -> bool { return S.first == W; })) {
+          [&](auto S) -> bool { return S.first == W; })) {
       KnownWords.push_back(W);
     }
   }
@@ -52,20 +48,20 @@ Strings Corrector::oneEditAway(std::string Word) {
   Strings WordsOneEditAway;
   std::string Alphabet = "abcdefghijklmnopqrstuvwxyz";
   for (auto j = 0; j <= Word.size(); j++) {
-    if (j != Word.size()) {
+    if (j != Word.size()) { // delete letter
       WordsOneEditAway.push_back(Word.substr(0, j) +
-                                 Word.substr(j + 1, Word.size()));
+          Word.substr(j + 1, Word.size()));
     }
-    if (j < Word.size() - 1) {
+    if (j < Word.size() - 1) { // transpose
       WordsOneEditAway.push_back(Word.substr(0, j) + Word[j + 1] + Word[j] +
-                                 Word.substr(j + 2, Word.size()));
+          Word.substr(j + 2, Word.size()));
     }
     for (auto i = 0; i < 26; i++) {
       WordsOneEditAway.push_back(Word.substr(0, j) + Alphabet[i] +
-                                 Word.substr(j, Word.size()));
-      if (j != Word.size()) {
+          Word.substr(j, Word.size())); // insert
+      if (j != Word.size()) { // replace
         WordsOneEditAway.push_back(Word.substr(0, j) + Alphabet[i] +
-                                   Word.substr(j + 1, Word.size()));
+            Word.substr(j + 1, Word.size()));
       }
     }
   }
